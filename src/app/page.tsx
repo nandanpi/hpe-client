@@ -4,6 +4,7 @@ import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "~/components/ui/card";
 import { Input } from "~/components/ui/input";
 import { predictURL } from "./actions";
+import { CSVUpload } from "./components/csv-upload";
 
 export default function HomePage() {
   const [isLoading, setIsLoading] = useState(false);
@@ -53,6 +54,11 @@ export default function HomePage() {
             </Card>
           )
         }
+      </div>
+      <div>
+        <CSVUpload onAnalyze={function (data: { [x: string]: string; }[]): void {
+          throw new Error("Function not implemented.");
+        } }/>
       </div>
     </>
   );
