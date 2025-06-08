@@ -1,90 +1,24 @@
 "use client";
-import { useState } from "react";
-import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
-import { Input } from "~/components/ui/input";
-import { predictURL } from "./actions";
+import { Footer } from "./components/Footer";
 import { CSVUpload } from "./components/csv-upload";
-import { ConfidenceBarChart } from "./components/confidencebarchart";
-import { ConfidencePieChart } from "./components/confidencepiechart";
+import Header from "./components/header";
+import Urlanaysis from "./components/url-analysis";
+
 export default function HomePage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [url, setUrl] = useState("");
-  const [data, setData] = useState<{
-    benign_confidence: number;
-    phishing_confidence: number;
-    url: string;
-  }>();
   return (
     <>
-      <div className="mt-8 flex flex-col items-center justify-center gap-4">
-        <Card className="mx-5 w-[75%]">
-          <CardHeader>
-            <CardTitle>URL Malicious Meter</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Input
-              value={url}
-              onChange={(e) => {
-                setUrl(e.target.value);
-              }}
-              placeholder="Enter URL here"
-            />
-          </CardContent>
-          <CardFooter>
-            <Button
-              onClick={async () => {
-                setIsLoading(true);
-                const resp = await predictURL(url);
-                setData(resp);
-              }}
-            >
-              Test URL
-            </Button>
-          </CardFooter>
-        </Card>
-        {data && (
-          <Card className="w-[75%]">
-            <CardHeader>
-              <CardTitle>Scores</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-2">
-                <p>
-                  <strong>Benign Confidence:</strong>{" "}
-                  <span>{data.benign_confidence}</span>
-                </p>
-                <p>
-                  <strong>Phishing Confidence:</strong>{" "}
-                  <span>{data.phishing_confidence}</span>
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
-        {data && (
-          <>
-            <ConfidencePieChart
-              benign={data.benign_confidence}
-              phishing={data.phishing_confidence}
-            />
-          </>
-        )}
-      </div>
-      <div></div>
+      <Header />
+      <div className="bg-background text-foreground min-h-screen space-y-4 px-4 py-4">
+        <section className="max-w-8xl bg-card border-border mx-auto rounded-xl border p-6 shadow-sm">
+          <Urlanaysis />
+        </section>
 
-      <div>
         <CSVUpload
           onAnalyze={function (data: { [x: string]: string }[]): void {
             throw new Error("Function not implemented.");
           }}
         />
+        <Footer />
       </div>
     </>
   );

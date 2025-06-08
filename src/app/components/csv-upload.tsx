@@ -2,7 +2,15 @@
 
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, FileUp, AlertCircle, Check } from "lucide-react";
+import {
+  Upload,
+  FileUp,
+  AlertCircle,
+  Check,
+  BarChart3,
+  Shield,
+  ShieldAlert,
+} from "lucide-react";
 import Papa from "papaparse";
 import { useToast } from "../../hooks/use-toast";
 import { bulkPredictURLs, bulkPredictURLsCSV } from "../../app/actions";
@@ -14,15 +22,9 @@ import {
   CardHeader,
   CardTitle,
 } from "../../components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../components/ui/table";
+
 import { Alert, AlertDescription } from "../../components/ui/alerts";
+import { Progress } from "../../components/ui/progress";
 
 type ParsedCSVRow = Record<string, string>;
 
@@ -107,6 +109,7 @@ export function CSVUpload({ onAnalyze }: CSVUploadProps) {
     },
     maxFiles: 1,
   });
+
   const [analysisResults, setAnalysisResults] = useState<
     { url: string; benign_confidence: number; phishing_confidence: number }[]
   >([]);
@@ -136,6 +139,7 @@ export function CSVUpload({ onAnalyze }: CSVUploadProps) {
 
     URL.revokeObjectURL(url);
   }
+
   const handleAnalyze = async (data: Record<string, string>[]) => {
     const urls = data
       .map((row) => row.url)
@@ -159,10 +163,35 @@ export function CSVUpload({ onAnalyze }: CSVUploadProps) {
     setIsLoading(false);
   };
 
+  // Calculate analysis statistics
+  const getAnalysisStats = () => {
+    if (analysisResults.length === 0) return null;
+
+    const safeUrls = analysisResults.filter(
+      (result) =>
+        Number.parseFloat(result.benign_confidence.toString()) >
+        Number.parseFloat(result.phishing_confidence.toString()),
+    ).length;
+
+    const maliciousUrls = analysisResults.length - safeUrls;
+    const safePercentage = (safeUrls / analysisResults.length) * 100;
+    const maliciousPercentage = (maliciousUrls / analysisResults.length) * 100;
+
+    return {
+      total: analysisResults.length,
+      safe: safeUrls,
+      malicious: maliciousUrls,
+      safePercentage,
+      maliciousPercentage,
+    };
+  };
+
+  const analysisStats = getAnalysisStats();
+
   return (
     <Card className="w-full shadow-md">
       <CardHeader>
-        <CardTitle className="text-xl">CSV Upload</CardTitle>
+        <CardTitle className="text-xl">Drop your CSV file here or click to upload.</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Drag & Drop Area */}
@@ -201,63 +230,84 @@ export function CSVUpload({ onAnalyze }: CSVUploadProps) {
 
         {csvData.length > 0 && headers.length > 0 && (
           <div className="space-y-2">
-            <div className="flex items-center space-x-2">
-              <Check className="h-4 w-4 text-green-500" />
-              <h3 className="text-sm font-medium">
-                CSV Preview (First 5 rows)
-              </h3>
-            </div>
-            <div className="overflow-x-auto rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {headers.map((header) => (
-                      <TableHead key={header}>{header}</TableHead>
-                    ))}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {csvData.map((row, rowIndex) => (
-                    <TableRow key={rowIndex}>
-                      {headers.map((header) => (
-                        <TableCell key={`${rowIndex}-${header}`}>
-                          {row[header]}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-            <p className="text-muted-foreground text-xs">
-              Showing {csvData.length} of {csvData.length} rows
-            </p>
             {analysisResults.length > 0 && (
-              <div className="mt-6 space-y-2">
-                <div className="flex items-center space-x-2">
-                  <Check className="h-4 w-4 text-green-500" />
-                  <h3 className="text-sm font-medium">Analysis Results</h3>
-                </div>
-                <div className="overflow-x-auto rounded-md border">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>URL</TableHead>
-                        <TableHead>Benign Confidence (%)</TableHead>
-                        <TableHead>Phishing Confidence (%)</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {analysisResults.map((result, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{result.url}</TableCell>
-                          <TableCell>{result.benign_confidence}</TableCell>
-                          <TableCell>{result.phishing_confidence}</TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
+              <div className="mt-6 space-y-4">
+                {analysisStats && (
+                  <Card className="border-t-4 border-t-black bg-gradient-to-r from-blue-50 to-purple-50">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center text-lg text-gray-800">
+                        <BarChart3 className="mr-2 h-5 w-5" />
+                        Security Analysis Summary
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {/* Summary Stats */}
+                      <div className="grid grid-cols-3 gap-4 text-center">
+                        <div className="space-y-1">
+                          <p className="text-2xl font-bold text-gray-800">
+                            {analysisStats.total}
+                          </p>
+                          <p className="text-sm text-gray-600">Total URLs</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-2xl font-bold text-gray-800">
+                            {analysisStats.safe}
+                          </p>
+                          <p className="text-sm text-gray-600">Safe URLs</p>
+                        </div>
+                        <div className="space-y-1">
+                          <p className="text-2xl font-bold text-gray-800">
+                            {analysisStats.malicious}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Suspicious URLs
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Visual Progress Bars */}
+                      <div className="space-y-4">
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <Shield className="h-4 w-4 text-green-600" />
+                              <span className="text-sm font-medium text-gray-700">
+                                Safe URLs
+                              </span>
+                            </div>
+                            <span className="text-sm font-bold text-green-600">
+                              {analysisStats.safePercentage.toFixed(1)}%
+                            </span>
+                          </div>
+                          <Progress
+                            value={analysisStats.safePercentage}
+                            className="h-3"
+                            indicatorClassName="bg-green-600"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center space-x-2">
+                              <ShieldAlert className="h-4 w-4 text-red-600" />
+                              <span className="text-sm font-medium text-gray-700">
+                                Suspicious URLs
+                              </span>
+                            </div>
+                            <span className="text-sm font-bold text-red-600">
+                              {analysisStats.maliciousPercentage.toFixed(1)}%
+                            </span>
+                          </div>
+                          <Progress
+                            value={analysisStats.maliciousPercentage}
+                            className="h-3"
+                            indicatorClassName="bg-red-600"
+                          />
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
           </div>
@@ -271,7 +321,7 @@ export function CSVUpload({ onAnalyze }: CSVUploadProps) {
             className="w-full"
             disabled={isLoading}
           >
-            Run Bulk Analysis
+            {isLoading ? "Analyzing..." : "Run Bulk Analysis"}
           </Button>
         </CardFooter>
       )}
