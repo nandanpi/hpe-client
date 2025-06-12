@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import Papa from "papaparse";
 import { useToast } from "../../hooks/use-toast";
-import { bulkPredictURLs, bulkPredictURLsCSV } from "../../app/actions";
+import { bulkPredictURLsCSV } from "../../app/actions";
 import { Button } from "../../components/ui/button";
 import {
   Card,
@@ -64,7 +64,7 @@ export function CSVUpload({ onAnalyze }: CSVUploadProps) {
           const headers = parsedData[0] ? Object.keys(parsedData[0]) : [];
           setHeaders(headers);
 
-          setCsvData(parsedData.slice(0, 5));
+          setCsvData(parsedData);
           setIsLoading(false);
         },
         error: (error) => {
@@ -148,13 +148,22 @@ export function CSVUpload({ onAnalyze }: CSVUploadProps) {
     setIsLoading(true);
 
     try {
-      const top5Results = await bulkPredictURLs(urls.slice(0, 5));
-      setAnalysisResults(top5Results);
-
+      console.log("Calling bulkPredictURLsCSV...");
       const csvResults = await bulkPredictURLsCSV(urls);
+      console.log("CSV Results received:", csvResults);
+      console.log("URLs to analyze:", urls);
+      setAnalysisResults(
+        csvResults.map((result) => ({
+          url: result.url,
+          benign_confidence: result.benign_confidence ?? 0,
+          phishing_confidence: result.phishing_confidence ?? 0,
+        })),
+      );
 
       if (csvResults.length > 0) {
         downloadCSVFromJSON(csvResults, "full_analysis_results.csv");
+      } else {
+        console.warn("No results received");
       }
     } catch (error) {
       console.error("Error during analysis:", error);
@@ -191,7 +200,9 @@ export function CSVUpload({ onAnalyze }: CSVUploadProps) {
   return (
     <Card className="w-full shadow-md">
       <CardHeader>
-        <CardTitle className="text-xl">Drop your CSV file here or click to upload.</CardTitle>
+        <CardTitle className="text-xl">
+          Drop your CSV file here or click to upload.
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Drag & Drop Area */}
