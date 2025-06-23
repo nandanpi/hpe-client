@@ -13,7 +13,7 @@ import {
 import { Input } from "../../components/ui/input";
 import { predictURL } from "../actions";
 import { ConfidencePieChart } from "../components/confidencepiechart";
-import { AlertCircle, CheckCircle, Globe, Shield } from "lucide-react";
+import { AlertCircle, CheckCircle, Shield } from "lucide-react";
 
 function UrlAnalysis() {
   const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +73,7 @@ function UrlAnalysis() {
               <Shield className="mr-2" /> URL Analysis
             </CardTitle>
             <CardDescription>
-              Enter a URL to check if it's safe or potentially malicious
+              Enter a URL to check if it&apos;s safe or potentially malicious
             </CardDescription>
           </CardHeader>
           <CardContent>

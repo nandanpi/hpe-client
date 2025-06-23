@@ -5,7 +5,7 @@ export async function predictURL(url: string) {
         "url": url
     })
     try{
-        const response = await fetch("http://localhost:5000/predict",{
+        const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/predict`,{
             headers: {
                 "Content-Type": 'application/json'
             },
@@ -28,27 +28,27 @@ export async function predictURL(url: string) {
 }
 
 
-  export async function bulkPredictURLsCSV(urls: string[]) {
-    const response = await fetch("http://localhost:5000/bulk_predict", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ urls }),
-    });
+  // export async function bulkPredictURLsCSV(urls: string[]) {
+  //   const response = await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/bulk_predict`, {
+  //     method: "POST",
+  //     headers: {
+  //       "Content-Type": "application/json",
+  //     },
+  //     body: JSON.stringify({ urls }),
+  //   });
   
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error("Server Error: " + errorText);
-    }
+  //   if (!response.ok) {
+  //     const errorText = await response.text();
+  //     throw new Error("Server Error: " + errorText);
+  //   }
   
-    const results: {
-      url: string;
-      benign_confidence?: number;
-      phishing_confidence?: number;
-      error?: string;
-    }[] = await response.json();
+  //   const results: {
+  //     url: string;
+  //     benign_confidence?: number;
+  //     phishing_confidence?: number;
+  //     error?: string;
+  //   }[] = await response.json();
   
-    return results;
-  }
+  //   return results;
+  // }
   

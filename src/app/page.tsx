@@ -1,7 +1,4 @@
 "use client";
-import { Footer } from "./components/Footer";
-import { CSVUpload } from "./components/csv-upload";
-import Header from "./components/header";
 import Urlanaysis from "./components/url-analysis";
 
 export default function HomePage() {
@@ -13,11 +10,11 @@ export default function HomePage() {
           <Urlanaysis />
         </section>
 
-        <CSVUpload
+        {/* <CSVUpload
           onAnalyze={function (data: { [x: string]: string }[]): void {
             throw new Error("Function not implemented.");
           }}
-        />
+        /> */}
         {/* <Footer /> */}
       </div>
     </>
